@@ -1,6 +1,8 @@
 <script lang="ts">
   import Info from "$lib/components/icons/Info.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
+  import Details from "$lib/components/DetailsModal.svelte";
+
   import type { ParsedLogLine } from "$lib/types";
 
   const perPageLimit = 20;
@@ -44,6 +46,8 @@
   let sort = $state("duration");
   let order = $state<"desc" | "asc">("desc");
   let currentPage = $state(1);
+  let showModal = $state(false);
+  let currentLog = $state<ParsedLogLine | null>(null);
 
   $effect.pre(() => {
     void search;
@@ -225,7 +229,11 @@
         <tr class="hover:bg-gray-50 transition-colors duration-150">
           <td class="px-4 py-3">
             <button
-              class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors duration-200 flex items-center gap-1"
+              onclick={() => {
+                currentLog = log;
+                showModal = true;
+              }}
+              class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm font-medium transition-colors duration-200 flex items-center gap-1"
             >
               <Info />
               More Info
@@ -281,3 +289,5 @@
   </table>
   <Pagination totalItems={preparedLogs.length} perPage={perPageLimit} {currentPage} {setPage} />
 </div>
+
+<Details bind:showModal log={currentLog} />
