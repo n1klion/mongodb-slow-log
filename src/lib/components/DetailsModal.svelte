@@ -175,8 +175,7 @@
             </div>
             <div class="p-4 space-y-3">
               <MetricRow label="Plan Summary">
-                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {getPlanClass(log.planSummary)}"
-                  >${log.planSummary}</span
+                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {getPlanClass(log.planSummary)}">{log.planSummary}</span
                 >
               </MetricRow>
               <MetricRow label="Query Hash">

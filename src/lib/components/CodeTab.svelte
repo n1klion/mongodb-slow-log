@@ -1,5 +1,10 @@
 <script lang="ts">
+  import { fly } from "svelte/transition";
+
   let { title, code }: { title: string; code: string } = $props();
+
+  let showNotification = $state(false);
+  let copySuccess = $state(true);
 
   function prettifyJSON(jsonString: string) {
     try {
@@ -9,14 +14,47 @@
     }
   }
 
-  function copyToClipboard() {
-    navigator.clipboard.writeText(code).catch((err) => {
+  async function copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(code);
+      copySuccess = true;
+      showNotification = true;
+
+      setTimeout(() => {
+        showNotification = false;
+      }, 2000);
+    } catch (err) {
       console.error("Failed to copy to clipboard:", err);
-    });
+      copySuccess = false;
+      showNotification = true;
+
+      setTimeout(() => {
+        showNotification = false;
+      }, 3000);
+    }
   }
 </script>
 
-<div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm relative">
+  {#if showNotification}
+    <div
+      class="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-white {copySuccess ? 'bg-green-500' : 'bg-red-500'}"
+      transition:fly={{ y: -20, duration: 300 }}
+    >
+      {#if copySuccess}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Copied to clipboard!
+      {:else}
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        Failed to copy
+      {/if}
+    </div>
+  {/if}
+
   <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center">
     <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
       <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
