@@ -35,7 +35,6 @@
   }
 </script>
 
-<!-- h-[90vh] max-h-[90vh] w-[70vw] max-w-[70vw] -->
 <dialog
   bind:this={dialog}
   onclose={handleOnClose}
@@ -49,9 +48,8 @@
       <div class="col-span-11">
         {@render header()}
       </div>
-      <div class="col-span-1 ">
+      <div class="col-span-1">
         <button
-          autofocus
           aria-label="Close"
           onclick={() => dialog?.close()}
           class="ml-auto cursor-pointer block px-1 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors text-sm leading-none"

@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 import { MongoLogSchema, type MongoLog, type ParsedLogLine } from "$lib/types";
 
 export function parseLogLine(line: string): ParsedLogLine | null {
@@ -44,7 +42,7 @@ export function extractLogData(jsonLog: MongoLog, rawLine: string): ParsedLogLin
   const commandJson = attr.command ? JSON.stringify(attr.command, null, 2) : "Not available";
 
   return {
-    id: uuidv4(),
+    id: window.crypto.randomUUID(),
     timestamp,
     collection,
     operation,

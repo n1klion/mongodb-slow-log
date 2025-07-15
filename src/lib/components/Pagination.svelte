@@ -36,7 +36,7 @@
   type PaginationButton = NextButton | PrevButton | RestButton | CommonButton;
   let { totalItems, perPage, currentPage, setPage }: PaginationProps = $props();
 
-  const buttons = $derived(() => {
+  const buttons = $derived.by(() => {
     const buttonsArray: PaginationButton[] = [];
     const totalPages = Math.ceil(totalItems / perPage);
     const startPage = Math.max(1, currentPage - 2);
@@ -103,7 +103,7 @@
 <div class="flex justify-center mt-6 mb-4">
   <nav aria-label="Query pagination">
     <ul class="flex items-center gap-1">
-      {#each buttons() as btn, index (index)}
+      {#each buttons as btn, index (index)}
         {#if btn.type === "prev"}
           <li class="inline-flex">
             <button
@@ -130,7 +130,9 @@
           <li class="inline-flex">
             <button
               onclick={() => setPage(btn.destination)}
-              class={`cursor-pointer px-3 py-2 leading-tight border border-gray-300 transition-colors duration-200 ${btn.isCurrent ? "text-blue-600 bg-blue-50 border-blue-300" : "text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-700"}`}
+              class="cursor-pointer px-3 py-2 leading-tight border border-gray-300 transition-colors duration-200 {btn.isCurrent
+                ? 'text-blue-600 bg-blue-50 border-blue-300'
+                : 'text-gray-500 bg-white hover:bg-gray-100 hover:text-gray-70'}"
             >
               {btn.destination}
             </button>

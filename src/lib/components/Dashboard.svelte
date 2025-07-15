@@ -3,6 +3,9 @@
   import Pagination from "$lib/components/Pagination.svelte";
   import Details from "$lib/components/DetailsModal.svelte";
 
+  import { Dashboard } from "$lib/services/dashboard.svelte";
+  import { formatTimestamp, getOperationClass, getPlanClass, getEfficiencyClass, getDurationClass } from "$lib/services/formaters";
+
   import type { ParsedLogLine } from "$lib/types";
 
   const perPageLimit = 20;
@@ -39,65 +42,11 @@
 
   let { logs }: { logs: ParsedLogLine[] } = $props();
 
-  let search = $state("");
-  let operation = $state("all");
-  let minDuration = $state(0);
-  let maxDuration = $state(0);
+  let dashboard = new Dashboard();
   let sort = $state("duration");
   let order = $state<"desc" | "asc">("desc");
-  let currentPage = $state(1);
   let showModal = $state(false);
-  let currentLog = $state<ParsedLogLine | null>(null);
-
-  $effect.pre(() => {
-    void search;
-    void operation;
-    void minDuration;
-    void maxDuration;
-
-    currentPage = 1;
-  });
-
-  function formatTimestamp(timestamp: string) {
-    return new Date(timestamp).toLocaleString();
-  }
-
-  function getOperationClass(operation: string) {
-    switch (operation) {
-      case "find":
-        return "bg-blue-100 text-blue-800";
-      case "insert":
-        return "bg-green-100 text-green-800";
-      case "update":
-        return "bg-orange-100 text-orange-800";
-      case "delete":
-        return "bg-red-100 text-red-800";
-      case "aggregate":
-        return "bg-purple-100 text-purple-800";
-      case "getmore":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  }
-
-  function getPlanClass(planSummary: string) {
-    if (planSummary.includes("COLLSCAN")) return "bg-red-100 text-red-800";
-    if (planSummary.includes("IXSCAN")) return "bg-green-100 text-green-800";
-    return "bg-orange-100 text-orange-800";
-  }
-
-  function getEfficiencyClass(efficiency: number) {
-    if (efficiency < 1) return "text-red-600";
-    if (efficiency < 10) return "text-orange-600";
-    return "text-green-600";
-  }
-
-  function getDurationClass(duration: number) {
-    if (duration > 5000) return "text-red-600";
-    if (duration > 1000) return "text-orange-600";
-    return "text-green-600";
-  }
+  let currentLog = $state<ParsedLogLine>(logs[0]);
 
   function orderSort(logA: ParsedLogLine, logB: ParsedLogLine) {
     let a = logA;
@@ -122,28 +71,28 @@
   }
 
   function searchFilter(log: ParsedLogLine) {
-    if (search.length <= 3) return true;
-    return log.collection.toLowerCase().includes(search.toLowerCase());
+    if (dashboard.search.length <= 3) return true;
+    return log.collection.toLowerCase().includes(dashboard.search.toLowerCase());
   }
 
   function operationFilter(log: ParsedLogLine) {
-    if (operation === "all") return true;
-    return log.operation === operation;
+    if (dashboard.operation === "all") return true;
+    return log.operation === dashboard.operation;
   }
 
   function durationFilter(log: ParsedLogLine) {
-    if (minDuration > 0 && log.duration < minDuration) return false;
-    if (maxDuration > 0 && log.duration > maxDuration) return false;
+    if (dashboard.minDuration > 0 && log.duration < dashboard.minDuration) return false;
+    if (dashboard.maxDuration > 0 && log.duration > dashboard.maxDuration) return false;
 
     return true;
   }
 
   function setPage(page: number) {
-    currentPage = page;
+    dashboard.currentPage = page;
   }
 
   let preparedLogs = $derived(logs.toSorted(orderSort).filter(searchFilter).filter(operationFilter).filter(durationFilter));
-  let preparedLogsPage = $derived(preparedLogs.slice((currentPage - 1) * perPageLimit, currentPage * perPageLimit));
+  let preparedLogsPage = $derived(preparedLogs.slice((dashboard.currentPage - 1) * perPageLimit, dashboard.currentPage * perPageLimit));
 </script>
 
 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
@@ -153,14 +102,14 @@
       type="text"
       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       placeholder="Filter by collection..."
-      bind:value={search}
+      bind:value={dashboard.search}
     />
   </div>
   <div>
     <label for="operationFilter" class="block text-xs font-semibold text-gray-700 mb-1"> Operation </label>
     <select
       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      bind:value={operation}
+      bind:value={dashboard.operation}
     >
       {#each Object.entries(operationDictionary) as [key, value] (key)}
         <option value={key}>
@@ -175,7 +124,7 @@
       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       type="number"
       placeholder="Min duration"
-      bind:value={minDuration}
+      bind:value={dashboard.minDuration}
       step={100}
     />
   </div>
@@ -185,7 +134,7 @@
       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       placeholder="Max duration"
       type="number"
-      bind:value={maxDuration}
+      bind:value={dashboard.maxDuration}
       step={100}
     />
   </div>
@@ -248,19 +197,17 @@
             </span>
           </td>
           <td class="px-4 py-3">
-            <span
-              class={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold uppercase tracking-wide ${getOperationClass(log.operation)}`}
-            >
+            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold uppercase tracking-wide {getOperationClass(log.operation)}">
               {log.operation}
             </span>
           </td>
           <td class="px-4 py-3">
-            <span class={`text-sm font-medium ${getDurationClass(log.duration)}`}>
+            <span class="text-sm font-medium {getDurationClass(log.duration)}">
               {log.duration.toLocaleString()} ms
             </span>
           </td>
           <td class="px-4 py-3">
-            <span class={`inline-flex items-center px-2 py-1 rounded text-xs font-semibold ${getPlanClass(log.planSummary)}`}>
+            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold {getPlanClass(log.planSummary)}">
               {log.planSummary}
             </span>
           </td>
@@ -274,7 +221,7 @@
             {log.keysExamined.toLocaleString()}
           </td>
           <td class="px-4 py-3">
-            <span class={`text-sm font-medium ${getEfficiencyClass(log.efficiencyRatio)}`}>
+            <span class="text-sm font-medium {getEfficiencyClass(log.efficiencyRatio)}">
               {log.efficiencyRatio.toFixed(2)}%
             </span>
           </td>
@@ -287,7 +234,7 @@
       {/each}
     </tbody>
   </table>
-  <Pagination totalItems={preparedLogs.length} perPage={perPageLimit} {currentPage} {setPage} />
+  <Pagination totalItems={preparedLogs.length} perPage={perPageLimit} currentPage={dashboard.currentPage} {setPage} />
 </div>
 
 <Details bind:showModal log={currentLog} />
