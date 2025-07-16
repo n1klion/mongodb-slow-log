@@ -17,9 +17,6 @@
     const fileContent = await file.text();
 
     setLogs(processLogFile(fileContent));
-    // .forEach((log) => {
-    //   logs.push(log);
-    // });
   }
 
   function handleOnDragOver(e: DragEvent) {
@@ -61,7 +58,7 @@
     <div class="p-6">
       <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
         <CloudUpload />
-        Upload Log File
+        Open Log File
       </h2>
 
       <div
