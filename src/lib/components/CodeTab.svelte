@@ -1,10 +1,21 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { fly } from "svelte/transition";
+  import hljs from "highlight.js";
+
+  import "highlight.js/styles/stackoverflow-light.min.css";
 
   let { title, code }: { title: string; code: string } = $props();
+  let codeElement = $state<HTMLElement>();
 
   let showNotification = $state(false);
   let copySuccess = $state(true);
+
+  onMount(() => {
+    if (codeElement) {
+      hljs.highlightElement(codeElement);
+    }
+  });
 
   function prettifyJSON(jsonString: string) {
     try {
@@ -35,7 +46,7 @@
   }
 </script>
 
-<div class="bg-white border border-gray-200 rounded-lg shadow-sm relative">
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm relative flex flex-col max-h-[80vh]">
   {#if showNotification}
     <div
       class="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 text-white {copySuccess ? 'bg-green-500' : 'bg-red-500'}"
@@ -55,7 +66,8 @@
     </div>
   {/if}
 
-  <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center">
+  <!-- Fixed Header -->
+  <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center flex-shrink-0">
     <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
       <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -82,9 +94,8 @@
       Copy
     </button>
   </div>
-  <div class="p-4 h-[70vh]">
-    <div class="bg-gray-900 rounded-lg p-4 h-full overflow-y-auto font-mono text-sm" id="rawLogContainer">
-      <pre class="text-orange-300 whitespace-pre-wrap">{prettifyJSON(code)}</pre>
-    </div>
+
+  <div class="font-mono text-sm overflow-y-auto flex-1/2">
+    <pre><code bind:this={codeElement} class="json">{prettifyJSON(code)}</code></pre>
   </div>
 </div>
