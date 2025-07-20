@@ -8,7 +8,7 @@
 
   import type { ParsedLogLine } from "$lib/types";
 
-  const perPageLimit = 20;
+  const perPageLimit = 17;
 
   const operationDictionary = {
     all: "All Operations",
@@ -37,7 +37,6 @@
     "Docs Returned",
     "Keys Examined",
     "Efficiency",
-    "Command",
   ];
 
   let { logs }: { logs: ParsedLogLine[] } = $props();
@@ -224,11 +223,6 @@
             <span class="text-sm font-medium {getEfficiencyClass(log.efficiencyRatio)}">
               {log.efficiencyRatio.toFixed(2)}%
             </span>
-          </td>
-          <td class="px-4 py-3">
-            <div class="max-w-xs truncate text-xs font-mono bg-gray-100 px-2 py-1 rounded" title={log.commandJson}>
-              {log.commandJson}
-            </div>
           </td>
         </tr>
       {/each}
