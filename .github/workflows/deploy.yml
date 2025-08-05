@@ -1,9 +1,15 @@
 name: Deploy to GitHub Pages
-
 on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: "master"
+        type: string
 
 jobs:
   build_site:
@@ -11,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || github.ref }}
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -21,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: build
+      - name: Build
         env:
           BASE_PATH: "/${{ github.event.repository.name }}"
         run: |
@@ -35,16 +43,17 @@ jobs:
   deploy:
     needs: build_site
     runs-on: ubuntu-latest
-
     permissions:
       pages: write
       id-token: write
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
+      - name: Log deployment info
+        run: |
+          echo "Deploying branch: ${{ github.event.inputs.branch || github.ref_name }}"
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
