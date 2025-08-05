@@ -1,21 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { fly } from "svelte/transition";
-  import hljs from "highlight.js";
-
-  import "highlight.js/styles/stackoverflow-light.min.css";
 
   let { title, code }: { title: string; code: string } = $props();
-  let codeElement = $state<HTMLElement>();
 
   let showNotification = $state(false);
   let copySuccess = $state(true);
-
-  onMount(() => {
-    if (codeElement) {
-      hljs.highlightElement(codeElement);
-    }
-  });
 
   function prettifyJSON(jsonString: string) {
     try {
@@ -96,6 +85,6 @@
   </div>
 
   <div class="font-mono text-sm overflow-y-auto flex-1/2">
-    <pre><code bind:this={codeElement} class="json">{prettifyJSON(code)}</code></pre>
+    <pre class="p-2 bg-gray-50"><code>{prettifyJSON(code)}</code></pre>
   </div>
 </div>
