@@ -55,7 +55,6 @@
     </div>
   {/if}
 
-  <!-- Fixed Header -->
   <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center flex-shrink-0">
     <h3 class="text-sm font-semibold text-gray-800 flex items-center gap-2">
       <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
